@@ -1,3 +1,4 @@
+
 import { autoBindMethodsForReact } from 'class-autobind-decorator';
 import classnames from 'classnames';
 import { clipboard, remote } from 'electron';
@@ -30,7 +31,7 @@ import { TimeTag } from '../tags/time-tag';
 import { ResponseCookiesViewer } from '../viewers/response-cookies-viewer';
 import { ResponseHeadersViewer } from '../viewers/response-headers-viewer';
 import { ResponseTimelineViewer } from '../viewers/response-timeline-viewer';
-import { ResponseViewer } from  '../viewers/response-viewer';
+import { ResponseViewer } from '../viewers/response-viewer';
 import { BlankPane } from './blank-pane';
 import { Pane, paneBodyClasses, PaneHeader } from './pane';
 import { PlaceholderResponsePane } from './placeholder-response-pane';
@@ -60,6 +61,7 @@ interface Props {
   response?: Response | null;
   environment?: Environment | null;
   unitTestResult?: UnitTestResult | null;
+  handleClickLink: Function;
 }
 
 @autoBindMethodsForReact(AUTOBIND_CFG)
@@ -250,6 +252,7 @@ export class ResponsePane extends PureComponent<Props> {
       response,
       responses,
       showCookiesModal,
+      handleClickLink,
     } = this.props;
 
     if (!request) {
@@ -347,6 +350,7 @@ export class ResponsePane extends PureComponent<Props> {
               responseId={response._id}
               updateFilter={response.error ? undefined : handleSetFilter}
               url={response.url}
+              handleClickLink={handleClickLink}
             />
           </TabPanel>
           <TabPanel className="react-tabs__tab-panel scrollable-container">

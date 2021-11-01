@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { Action, bindActionCreators, Dispatch } from 'redux';
 import { parse as urlParse } from 'url';
 
-import {  SegmentEvent, trackSegmentEvent } from '../../common/analytics';
+import { SegmentEvent, trackSegmentEvent } from '../../common/analytics';
 import {
   ACTIVITY_HOME,
   ACTIVITY_MIGRATION,
@@ -487,6 +487,87 @@ class App extends PureComponent<AppProps, State> {
       },
     });
   }
+
+
+
+
+
+
+
+  _handleClickLink(url: string) {
+
+
+    const buildNewUrl = (url: string, requestUrl: string): string => {
+      if (url.startsWith('http')) {
+        return url
+      } else {
+        let urlObj = new URL(requestUrl)
+        let protocol = urlObj.protocol
+        let hostname = urlObj.hostname;
+        return protocol + '//' + hostname + url
+      }
+    }
+    const buildNewName = (name: string, url: string): string => {
+      if (url.startsWith('http')) {
+        let urlObj = new URL(url)
+        let pathname = urlObj.pathname
+        return name + " " + pathname;
+      } else {
+        return name + " " + url
+      }
+    }
+
+    const request = this.props.activeRequest
+    if (!request) {
+      return;
+    }
+    const environmentId = this.props.activeEnvironment ? this.props.activeEnvironment._id : undefined;
+
+
+    const newUrl = buildNewUrl(url, request.url);
+    const newName = buildNewName(request.name, url);
+    const duplicateAndAutoSend = async () => {
+      try {
+        console.info(newUrl);
+        const newRequest = await requestOperations.duplicate(request, {
+          name: newName,
+          url: newUrl,
+        });
+
+        await this._handleSetActiveRequest(newRequest._id);
+        models.stats.incrementCreatedRequests();
+        await this._handleSendRequestWithEnvironment(newRequest._id, environmentId);
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    duplicateAndAutoSend()
+
+  }
+
+  /*
+    _handleClickLink(url: string) {
+      const mode = this._getMode();
+  
+  
+      console.log('[response] Clicked link', url);
+  
+      if (this.props.handleDuplicateRequest) {
+        this.props.handleDuplicateRequest(url);
+      }
+      if (mode === 'application/xml') {
+        clickLink(xmlDecode(url));
+        return;
+      }
+      let fake = 1
+      if (false || 2 <= fake) {
+        clickLink(url);
+      }
+  
+    }
+    */
 
   async _fetchRenderContext() {
     const { activeEnvironment, activeRequest, activeWorkspace } = this.props;
@@ -1548,6 +1629,7 @@ class App extends PureComponent<AppProps, State> {
                 handleUpdateRequestMimeType={this._handleUpdateRequestMimeType}
                 handleShowSettingsModal={App._handleShowSettingsModal}
                 handleUpdateDownloadPath={this._handleUpdateDownloadPath}
+                handleClickLink={this._handleClickLink}
                 isVariableUncovered={isVariableUncovered}
                 headerEditorKey={forceRefreshHeaderCounter + ''}
                 handleSidebarSort={this._sortSidebar}

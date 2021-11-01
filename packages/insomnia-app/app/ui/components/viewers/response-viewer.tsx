@@ -9,7 +9,7 @@ import {
   PREVIEW_MODE_FRIENDLY,
   PREVIEW_MODE_RAW,
 } from '../../../common/constants';
-import { clickLink } from '../../../common/electron-helpers';
+//import { clickLink } from '../../../common/electron-helpers';
 import { hotKeyRefs } from '../../../common/hotkeys';
 import { executeHotKey } from '../../../common/hotkeys-listener';
 import { xmlDecode } from '../../../common/misc';
@@ -40,6 +40,7 @@ interface Props {
   previewMode: string;
   responseId: string;
   url: string;
+  handleClickLink?: Function;
   updateFilter?: (filter: string) => void;
   error?: string | null;
 }
@@ -233,11 +234,13 @@ export class ResponseViewer extends Component<Props, State> {
     const mode = this._getMode();
 
     if (mode === 'application/xml') {
-      clickLink(xmlDecode(url));
-      return;
+      url = xmlDecode(url)
     }
 
-    clickLink(url);
+    if (this.props.handleClickLink) {
+      this.props.handleClickLink(url);
+    }
+
   }
 
   _renderView() {

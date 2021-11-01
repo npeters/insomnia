@@ -23,7 +23,7 @@ import type { WrapperProps } from './wrapper';
 interface Props {
   forceRefreshKey: number;
   gitSyncDropdown: ReactNode;
-  handleActivityChange: (options: {workspaceId?: string; nextActivity: GlobalActivity}) => Promise<void>;
+  handleActivityChange: (options: { workspaceId?: string; nextActivity: GlobalActivity }) => Promise<void>;
   handleChangeEnvironment: Function;
   handleDeleteResponse: Function;
   handleDeleteResponses: Function;
@@ -274,6 +274,7 @@ export class WrapperDebug extends PureComponent<Props> {
       handleSetResponseFilter,
       handleShowCookiesModal,
       handleShowRequestSettingsModal,
+
     } = this.props;
     const {
       activeEnvironment,
@@ -287,6 +288,7 @@ export class WrapperDebug extends PureComponent<Props> {
       responseFilterHistory,
       responsePreviewMode,
       settings,
+      handleClickLink,
     } = this.props.wrapperProps;
 
     // activeRequest being truthy only needs to be checked for isGrpcRequest (for now)
@@ -330,6 +332,7 @@ export class WrapperDebug extends PureComponent<Props> {
           response={activeResponse}
           responses={activeRequestResponses}
           unitTestResult={activeUnitTestResult}
+          handleClickLink={handleClickLink}
         />
       </ErrorBoundary>
     );

@@ -20,7 +20,7 @@ import { DropdownItem } from '../base/dropdown/dropdown-item';
 import { showModal } from '../modals/index';
 import { WrapperModal } from '../modals/wrapper-modal';
 import { ResponseHeadersViewer } from './response-headers-viewer';
-import { ResponseViewer } from  './response-viewer';
+import { ResponseViewer } from './response-viewer';
 
 interface Part {
   name: string;

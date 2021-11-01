@@ -123,6 +123,7 @@ export type WrapperProps = AppProps & {
   handleSendAndDownloadRequestWithEnvironment: Function;
   handleUpdateRequestMimeType: (mimeType: string) => Promise<Request | null>;
   handleUpdateDownloadPath: Function;
+  handleClickLink: Function;
 
   paneWidth: number;
   paneHeight: number;
@@ -228,7 +229,7 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
     return null;
   }
 
-  async _handleWorkspaceActivityChange({ workspaceId, nextActivity }: {workspaceId?: string; nextActivity: GlobalActivity}) {
+  async _handleWorkspaceActivityChange({ workspaceId, nextActivity }: { workspaceId?: string; nextActivity: GlobalActivity }) {
     const { activity, activeApiSpec, handleSetActiveActivity } = this.props;
 
     // Remember last activity on workspace for later, but only if it isn't HOME
