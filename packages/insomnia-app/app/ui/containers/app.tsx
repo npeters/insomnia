@@ -497,6 +497,7 @@ class App extends PureComponent<AppProps, State> {
   _handleClickLink(url: string) {
 
 
+    const trashIcone = "✨ ";
     const buildNewUrl = (url: string, requestUrl: string): string => {
       if (url.startsWith('http')) {
         return url
@@ -507,31 +508,89 @@ class App extends PureComponent<AppProps, State> {
         return protocol + '//' + hostname + url
       }
     }
-    const buildNewName = (name: string, url: string): string => {
+    const buildNewName = (url: string): string => {
       if (url.startsWith('http')) {
         let urlObj = new URL(url)
         let pathname = urlObj.pathname
-        return name + " " + pathname;
+        return pathname;
       } else {
-        return name + " " + url
+        return url
       }
     }
+
+    const newTrashRequestGroup = async (request: Request | GrpcRequest) => {
+      const newRequestGroup = await models.requestGroup.create({
+        name: trashIcone + " " + request.name,
+        parentId: request.parentId,
+
+      });
+
+      models.stats.incrementCreatedRequestsForDescendents(newRequestGroup);
+      await models.requestGroupMeta.create({
+        parentId: newRequestGroup._id,
+        collapsed: false,
+      });
+
+      return newRequestGroup
+    }
+
 
     const request = this.props.activeRequest
     if (!request) {
       return;
     }
+
+
+
     const environmentId = this.props.activeEnvironment ? this.props.activeEnvironment._id : undefined;
 
 
     const newUrl = buildNewUrl(url, request.url);
-    const newName = buildNewName(request.name, url);
+    const newName = buildNewName(url);
+
+
     const duplicateAndAutoSend = async () => {
       try {
         console.info(newUrl);
+        let parentId = request.parentId;
+        console.log("parentId " + parentId);
+        const requestGroup = await models.requestGroup.getById(request.parentId)
+
+        console.log("requestGroup " + requestGroup);
+        if (!requestGroup || !requestGroup.name.startsWith(trashIcone)) {
+          console.log("not parent " + parentId);
+
+          const neighborRequestGroup = await models.requestGroup.findByParentId(parentId)
+          let maybeValidNeighbor = neighborRequestGroup.find(g => g.name.startsWith(trashIcone))
+          if (maybeValidNeighbor) {
+            parentId = maybeValidNeighbor._id;
+
+            //force a deplier le groupe
+            let requestGroupMeta = await models.requestGroupMeta.getByParentId(parentId)
+            if (requestGroupMeta) {
+              await models.requestGroupMeta.update(requestGroupMeta, {
+                collapsed: false,
+              });
+            }
+
+            console.log("maybeValidNeighbor " + parentId);
+
+          } else {
+            const newRequestGroup = await newTrashRequestGroup(request)
+            parentId = newRequestGroup._id;
+            console.log("newParentId " + parentId);
+          }
+
+        } else {
+          console.log("already in trash " + requestGroup.name);
+        }
+
+
+
         const newRequest = await requestOperations.duplicate(request, {
           name: newName,
           url: newUrl,
+          parentId: parentId,
         });
 
         await this._handleSetActiveRequest(newRequest._id);
