@@ -502,12 +502,22 @@ class App extends PureComponent<AppProps, State> {
       if (url.startsWith('http')) {
         return url
       } else {
-        let urlObj = new URL(requestUrl)
-        let protocol = urlObj.protocol
-        let hostname = urlObj.hostname;
-        return protocol + '//' + hostname + url
+        //let urlObj = new URL(requestUrl)
+        console.log(requestUrl);
+
+        let indexProtocol = requestUrl.indexOf('//');
+        if (indexProtocol > 0) {
+          let indexHost = requestUrl.indexOf('/', indexProtocol + 2);
+          if (indexHost > 0) {
+            let protocol = requestUrl.substring(0, indexProtocol + 2);
+            let hostname = requestUrl.substring(indexProtocol + 2, indexHost);
+            return protocol + hostname + url
+          }
+        }
+        return url
       }
     }
+
     const buildNewName = (url: string): string => {
       if (url.startsWith('http')) {
         let urlObj = new URL(url)
@@ -540,11 +550,9 @@ class App extends PureComponent<AppProps, State> {
       return;
     }
 
-
-
     const environmentId = this.props.activeEnvironment ? this.props.activeEnvironment._id : undefined;
 
-
+    console.log("req:" + request);
     const newUrl = buildNewUrl(url, request.url);
     const newName = buildNewName(url);
 
